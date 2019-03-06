@@ -12,7 +12,7 @@ A script to enumerate Google Storage buckets, determine what access you have to 
 - Given a keyword, this script enumerates Google Storage buckets based on a number of permutations generated from the keyword.
 - Then, any discovered bucket will be output.
 - Then, any permissions that you are granted (if any) to any discovered bucket will be output.
-- The script will check those privileges for privilege escalation (storage.buckets.setIamPolicy) will output anything interesting (such as pulicly listable, publicly writable, authenticated listable, privilege escalation, etc).
+- The script will check those privileges for privilege escalation (storage.buckets.setIamPolicy) will output anything interesting (such as publicly listable, publicly writable, authenticated listable, privilege escalation, etc).
 
 ## Requirements
 
