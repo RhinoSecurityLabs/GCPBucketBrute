@@ -23,7 +23,7 @@ def outprint(data='', file_path='', normal_print=''):
     normal_print(data)
 
 
-def generate_bucket_permutations(keyword):
+def generate_bucket_permutations(keyword, wordlist):
     permutation_templates = [
         '{keyword}-{permutation}',
         '{permutation}-{keyword}',
@@ -32,7 +32,7 @@ def generate_bucket_permutations(keyword):
         '{keyword}{permutation}',
         '{permutation}{keyword}'
     ]
-    with open('./permutations.txt', 'r') as f:
+    with open(wordlist, 'r') as f:
         permutations = f.readlines()
         buckets = []
         for perm in permutations:
@@ -83,7 +83,7 @@ def main(args):
 
     subprocesses = []
     if args.keyword:
-        buckets = generate_bucket_permutations(args.keyword)
+        buckets = generate_bucket_permutations(args.keyword, args.wordlist)
     elif args.check_single:
         buckets = [args.check_single]
 
@@ -203,7 +203,7 @@ class Worker(multiprocessing.Process):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='This script will generate a list of permutations from ./permutations.txt using the keyword passed into the -k/--keyword argument. Then it will attempt to enumerate Google Storage buckets with those names without any authentication. If a bucket is found to be listable, it will be reported (buckets that allow access to "allUsers"). If a bucket is found but it is not listable, it will use the default "gcloud" CLI credentials to try and list the bucket. If the bucket is listable with credentials it will be reported (buckets that allow access to "allAuthenticatedUsers"), otherwise it will reported as existing, but unlistable.')
+    parser = argparse.ArgumentParser(description='This script will generate a list of permutations from wordlist specified by -w/--wordlist (default ./permutations.txt) using the keyword passed into the -k/--keyword argument. Then it will attempt to enumerate Google Storage buckets with those names without any authentication. If a bucket is found to be listable, it will be reported (buckets that allow access to "allUsers"). If a bucket is found but it is not listable, it will use the default "gcloud" CLI credentials to try and list the bucket. If the bucket is listable with credentials it will be reported (buckets that allow access to "allAuthenticatedUsers"), otherwise it will reported as existing, but unlistable.')
     # Add mutually exclusive arguments: keyword or a single bucket
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument('--check-single', required=False, help='Check a single bucket name instead of bruteforcing names based on a keyword.')
@@ -212,7 +212,8 @@ if __name__ == '__main__':
     parser.add_argument('-f', '--service-account-credential-file-path', required=False, default=None, help='The path to the JSON file that contains the private key for a GCP service account. By default, you will be prompted for a user access token, then if you decline to enter one it will prompt you to default to the default system credentials. More information here: https://google-auth.readthedocs.io/en/latest/user-guide.html#service-account-private-key-files and here: https://google-auth.readthedocs.io/en/latest/user-guide.html#user-credentials')
     parser.add_argument('-u', '--unauthenticated', required=False, default=False, action='store_true', help='Force an unauthenticated scan (you will not be prompted for credentials)')
     parser.add_argument('-o', '--out-file', required=False, default=None, help='The path to a log file to write the scan results to. The file will be created if it does not exist and will append to it if it already exists. By default output will only print to the screen.')
-
+    parser.add_argument('-w', '--wordlist', required=False, default='./permutations.txt', help='Wordlist for generation of bucket-name permutations.')
+    
     args = parser.parse_args()
 
     main(args)
