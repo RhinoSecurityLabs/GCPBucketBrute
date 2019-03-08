@@ -32,7 +32,7 @@ A script to enumerate Google Storage buckets, determine what access you have to 
 1. Build the [Docker](https://docs.docker.com/) image:
 
 ```bash
-sudo docker build -t gcpbucketbrute https://github.com/RhinoSecurityLabs/GCPBucketBrute
+sudo docker build -t gcpbucketbrute https://github.com/RhinoSecurityLabs/GCPBucketBrute.git
 ```
 
 2. Run the Docker image (mount volume from host to provide files inside the image):
