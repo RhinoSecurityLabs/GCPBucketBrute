@@ -27,6 +27,20 @@ A script to enumerate Google Storage buckets, determine what access you have to 
 2. `cd GCPBucketBrute/`
 3. `pip3 install -r requirements.txt` or `python3 -m pip install -r requirements.txt`
 
+### Using Docker
+
+1. Build the [Docker](https://docs.docker.com/) image:
+
+```bash
+sudo docker build -t gcpbucketbrute https://github.com/RhinoSecurityLabs/GCPBucketBrute.git
+```
+
+2. Run the Docker image (mount volume from host to provide files inside the image):
+
+```bash
+sudo docker run -v /tmp:/data gcpbucketbrute -k evilcorp -f /data/gcp-service-creds.json -w /data/words.txt
+```
+
 ## Usage
 
 First, determine the type of authentication you want to use for enumeration between a user account, service account, or unauthenticated. If you are using a service account, provide the file path to the private key via the `-f`/`--service-account-credential-file-path` argument. If you are using a user account, don't provide an authentication argument. You will then be prompted to enter the access token of your user account for accessing the GCP APIs. If you want to scan completely unauthenticated, pass the `-u`/`--unauthenticated` argument to hide authentication prompts.
