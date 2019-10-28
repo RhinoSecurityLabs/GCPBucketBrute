@@ -53,7 +53,7 @@ python3 gcpbucketbrute.py -k test -s 10
 - `--check`
     - This argument is mutually exclusive with `-k`/`--keyword` and accepts a single string. It allows you to check your permissions on a particular bucket, rather than generating a list of permutations based on a keyword. This may be repeated to check several buckets. Credit: [@BBerastegui](https://github.com/BBerastegui)
 - `--check-list`
-    - This argument is mutually exclusive with `-k`/`--keyword` and `--check`. It allows you to check permissions of a list of buckets in a file. They should be listed one-per-line in a text file.
+    - This argument is mutually exclusive with `-k`/`--keyword` and `--check`. It allows you to check permissions of a list of buckets in a file. They should be listed one-per-line in a text file. To read from standard input, pass `-` as the filename.
 - `-s`/`--subprocesses`
     - This argument specifies how many subprocesses will be used for bucket enumeration. The default is 5 and the higher you set this value, the faster enumeration will be, but your requests-per-second to Google will increase. These are essentially threads, but the script uses subprocesses instead of threads for parallel execution.
 - `-f`/`--service-account-credential-file-path`

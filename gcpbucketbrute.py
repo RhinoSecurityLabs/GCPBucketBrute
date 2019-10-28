@@ -3,6 +3,7 @@ import argparse
 import time
 import multiprocessing
 import json
+import sys
 import textwrap
 
 from functools import partial
@@ -87,7 +88,7 @@ def main(args):
     elif args.check:
         buckets = args.check
     elif args.check_list:
-        with open(args.check_list, 'r') as fd:
+        with sys.stdin if args.check_list == '-' else open(args.check_list, 'r') as fd:
             buckets = fd.read().splitlines()
 
     start_time = time.time()
