@@ -60,3 +60,6 @@ python3 gcpbucketbrute.py -k test -s 10
     - This argument forces unauthenticated enumeration. With this flag, you will not be prompted for credentials and valid buckets will not be checked for authenticated permissions.
 - `-o`/`--out-file`
     - This argument allows you to specify a (relative or absolute) file path to a log file to output the results to. The file will be created if it does not already exist and it will be appended to if it does already exist.
+- `-x`/`--exit`
+    - Set this flag to exit with a failing exit code (`1`) if any buckets with public access are found. If not set, the command always exits with a successful exit code (`0`).
+

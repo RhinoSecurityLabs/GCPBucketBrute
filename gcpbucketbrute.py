@@ -97,13 +97,15 @@ def main(args):
         subprocesses.append(subproc)
         subproc.start()
 
+    exit_code = 0
     cancelled = False
-    while len(subprocesses) > 0:
-        try:
-            subprocesses = [s.join() for s in subprocesses if s is not None]
-        except KeyboardInterrupt:
-            cancelled = True
-            print('Ctrl+C pressed, killing subprocesses...')
+    try:
+        for proc in subprocesses:
+            proc.join()
+            exit_code |= proc.exitcode
+    except KeyboardInterrupt:
+        cancelled = True
+        print('Ctrl+C pressed, killing subprocesses...')
 
     if not cancelled:
         end_time = time.time()
@@ -120,9 +122,12 @@ def main(args):
             print('\nScanned {} potential buckets in {} second(s).'.format(len(buckets), d.second))
 
     print('\nGracefully exiting!')
+
     if args.out_file:
         print = normal_print
 
+    if args.exit:
+        sys.exit(exit_code)
 
 class Worker(multiprocessing.Process):
     def __init__(self, client, print, permutation_list, out_file):
@@ -133,12 +138,14 @@ class Worker(multiprocessing.Process):
         self.out_file = out_file
 
     def run(self):
+        found_public = False
         try:
             for bucket_name in self.permutation_list:
                 if self.check_existence(bucket_name):
-                    self.check_permissions(bucket_name)
+                    found_public |= self.check_permissions(bucket_name)
         except KeyboardInterrupt:
             return
+        exit(0 if not found_public else 1)
 
     def check_existence(self, bucket_name):
         # Check if bucket exists before trying to TestIamPermissions on it
@@ -150,6 +157,7 @@ class Worker(multiprocessing.Process):
     def check_permissions(self, bucket_name):
         authenticated_permissions = []
         unauthenticated_permissions = []
+        unauthenticated_access_found = False
 
         # If client exists, use it to make an authenticated check
         if self.client:
@@ -186,6 +194,7 @@ class Worker(multiprocessing.Process):
         unauthenticated_permissions = requests.get('https://www.googleapis.com/storage/v1/b/{}/iam/testPermissions?permissions=storage.buckets.delete&permissions=storage.buckets.get&permissions=storage.buckets.getIamPolicy&permissions=storage.buckets.setIamPolicy&permissions=storage.buckets.update&permissions=storage.objects.create&permissions=storage.objects.delete&permissions=storage.objects.get&permissions=storage.objects.list&permissions=storage.objects.update'.format(bucket_name)).json()
 
         if unauthenticated_permissions.get('permissions'):
+            unauthenticated_access_found = True
             self.print('\n    UNAUTHENTICATED ACCESS ALLOWED: {}'.format(bucket_name))
             if 'storage.buckets.setIamPolicy' in unauthenticated_permissions['permissions']:
                 self.print('        - VULNERABLE TO PRIVILEGE ESCALATION (storage.buckets.setIamPolicy)')
@@ -201,6 +210,8 @@ class Worker(multiprocessing.Process):
         if not (authenticated_permissions or unauthenticated_permissions.get('permissions')):
             self.print('    EXISTS: {}'.format(bucket_name))
 
+        return unauthenticated_access_found
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='This script will generate a list of permutations from ./permutations.txt using the keyword passed into the -k/--keyword argument. Then it will attempt to enumerate Google Storage buckets with those names without any authentication. If a bucket is found to be listable, it will be reported (buckets that allow access to "allUsers"). If a bucket is found but it is not listable, it will use the default "gcloud" CLI credentials to try and list the bucket. If the bucket is listable with credentials it will be reported (buckets that allow access to "allAuthenticatedUsers"), otherwise it will reported as existing, but unlistable.')
@@ -212,6 +223,7 @@ if __name__ == '__main__':
     parser.add_argument('-f', '--service-account-credential-file-path', required=False, default=None, help='The path to the JSON file that contains the private key for a GCP service account. By default, you will be prompted for a user access token, then if you decline to enter one it will prompt you to default to the default system credentials. More information here: https://google-auth.readthedocs.io/en/latest/user-guide.html#service-account-private-key-files and here: https://google-auth.readthedocs.io/en/latest/user-guide.html#user-credentials')
     parser.add_argument('-u', '--unauthenticated', required=False, default=False, action='store_true', help='Force an unauthenticated scan (you will not be prompted for credentials)')
     parser.add_argument('-o', '--out-file', required=False, default=None, help='The path to a log file to write the scan results to. The file will be created if it does not exist and will append to it if it already exists. By default output will only print to the screen.')
+    parser.add_argument('-x', '--exit', required=False, default=False, action='store_true', help='Exit with a failing code if any buckets with public access are found.')
 
     args = parser.parse_args()
 
