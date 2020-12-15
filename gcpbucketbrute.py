@@ -51,7 +51,7 @@ def generate_bucket_permutations(keyword):
     # Strip any guesses less than 3 characters or more than 63 characters
     for bucket in buckets:
         if len(bucket) < 3 or len(bucket) > 63:
-            del buckets[bucket]
+            buckets.remove(bucket)
 
     print('\nGenerated {} bucket permutations.\n'.format(len(buckets)))
     return buckets
